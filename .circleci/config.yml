@@ -38,15 +38,15 @@ jobs:
           command: cd _bld_rel && make -j2
 
       - run:
-        name: Test DEBUG
-        command: |
-          ./_bld/tests/all_tests -r xml -o test-reports/debug.xml
-          ./_bld/tests/all_tests_sh -r xml -o test-reports/debug-single-header.xml
+          name: Test DEBUG
+          command: |
+            ./_bld/tests/all_tests -r xml -o test-reports/debug.xml
+            ./_bld/tests/all_tests_sh -r xml -o test-reports/debug-single-header.xml
       - run:
-        name: Test RELEASE
-        command: |
-          ./_bld_rel/tests/all_tests -r xml -o test-reports/release.xml
-          ./_bld_rel/tests/all_tests_sh -r xml -o test-reports/release-single-header.xml
+          name: Test RELEASE
+          command: |
+            ./_bld_rel/tests/all_tests -r xml -o test-reports/release.xml
+            ./_bld_rel/tests/all_tests_sh -r xml -o test-reports/release-single-header.xml
 
       - store_test_results:
           path: test-reports/
