@@ -664,12 +664,12 @@ constexpr T dot(const Vec<T, l, f>& lhs, const Vec<T, l, f>& rhs) {
   return result;
 }
 template <typename T, std::size_t l, Flags f>
-constexpr T length(const Vec<T, l, f>& v) {
+constexpr T norm(const Vec<T, l, f>& v) {
   return sqrt<f>(dot(v, v));
 }
 template <typename T, std::size_t l, Flags f>
 constexpr Vec<T, l, f> normalize(const Vec<T, l, f>& v) {
-  return v / length(v);
+  return v / norm(v);
 }
 }  // namespace VECPP_NAMESPACE
 
