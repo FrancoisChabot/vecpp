@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: francoischabot/build_env
+    steps:
+      - checkout
+      - run: git submodule update --init
+      - run:
+          name: run and test dbg build
+          command: |
+            mkdir _bld && cd _bld
+            cmake -DCMAKE_BUILD_TYPE=DEBUG -DVECPP_BUILD_TESTS=ON -DVECPP_BUILD_SINGLE_HEADER=ON ..
+            make -j4
+            ctest
+      - run:
+          name: run and test rel build
+          command: |
+            mkdir _bld_rel && cd _bld_rel
+            cmake -DCMAKE_BUILD_TYPE=RELEASE -DVECPP_BUILD_TESTS=ON -DVECPP_BUILD_SINGLE_HEADER=ON ..
+            make -j4
+            ctest
