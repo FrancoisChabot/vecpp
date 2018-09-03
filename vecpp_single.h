@@ -76,18 +76,6 @@ T trunc(const T& v) {
   return std::trunc(v);
 }
 template <typename T>
-T sin(const T& v) {
-  return std::sin(v);
-}
-template <typename T>
-T cos(const T& v) {
-  return std::cos(v);
-}
-template <typename T>
-T tan(const T& v) {
-  return std::tan(v);
-}
-template <typename T>
 T mod(const T& v, const T& d) {
   if constexpr (std::is_integral_v<T>) {
     return v % d;
@@ -149,18 +137,6 @@ constexpr T trunc(const T& v) {
 template <typename T>
 constexpr T fract(const T& v) {
   return v - floor(v);
-}
-template <typename T>
-constexpr T sin(const T& v) {
-  assert(false);
-}
-template <typename T>
-constexpr T cos(const T& v) {
-  assert(false);
-}
-template <typename T>
-constexpr T tan(const T& v) {
-  return sin(v) / cos(v);
 }
 template <typename T>
 constexpr T mod(const T& v, const T& d) {
@@ -462,7 +438,7 @@ constexpr T sin(const Angle<T, f>& a) {
     }
     return result;
   } else {
-    return non_cste::sin(a.as_rad());
+    return std::sin(a.as_rad());
   }
 }
 template <typename T, Flags f>
@@ -470,7 +446,7 @@ constexpr T cos(const Angle<T, f>& a) {
   if constexpr (is_ct(f)) {
     return sin(a + Angle<T, f>::from_rad(half_pi<T>));
   } else {
-    return non_cste::cos(a.as_rad());
+    return std::cos(a.as_rad());
   }
 }
 template <typename T, Flags f>
@@ -478,7 +454,7 @@ constexpr T tan(const Angle<T, f>& a) {
   if constexpr (is_ct(f)) {
     return sin(a) / cos(a);
   } else {
-    return non_cste::tan(a.as_rad());
+    return std::tan(a.as_rad());
   }
 }
 }  // namespace VECPP_NAMESPACE
