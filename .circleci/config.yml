@@ -22,14 +22,11 @@ jobs:
           command: |
             mkdir _bld && cd _bld
             cmake -DCMAKE_BUILD_TYPE=DEBUG -DVECPP_BUILD_TESTS=ON -DVECPP_BUILD_SINGLE_HEADER=ON ..
-            make -j2
       - run:
           name: Prepare RELEASE
           command: |
             mkdir _bld_rel && cd _bld_rel
             cmake -DCMAKE_BUILD_TYPE=RELEASE -DVECPP_BUILD_TESTS=ON -DVECPP_BUILD_SINGLE_HEADER=ON ..
-            make -j2
-
       - run:
           name: Build DEBUG
           command: cd _bld && make -j2
@@ -40,13 +37,17 @@ jobs:
       - run:
           name: Test DEBUG
           command: |
-            ./_bld/tests/all_tests -r xml -o test-reports/debug.xml
-            ./_bld/tests/all_tests_sh -r xml -o test-reports/debug-single-header.xml
+            mkdir test-reports/debug
+            mkdir test-reports/debug-single-header
+            ./_bld/tests/all_tests -r xml -o test-reports/debug/results.xml
+            ./_bld/tests/all_tests_sh -r xml -o test-reports/debug-single-header/results.xml
       - run:
           name: Test RELEASE
           command: |
-            ./_bld_rel/tests/all_tests -r xml -o test-reports/release.xml
-            ./_bld_rel/tests/all_tests_sh -r xml -o test-reports/release-single-header.xml
+            mkdir test-reports/release
+            mkdir test-reports/release-single-header
+            ./_bld_rel/tests/all_tests -r xml -o test-reports/release/results.xml
+            ./_bld_rel/tests/all_tests_sh -r xml -o test-reports/release-single-header/results.xml
 
       - store_test_results:
           path: test-reports/
