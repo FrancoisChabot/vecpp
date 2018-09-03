@@ -3,11 +3,11 @@ workflows:
   build:
     jobs:
       - build:
-        filters:
-          branches:
-            ignore:
-              - gh-pages
-              - single_header
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+                - single_header
           
 version: 2
 jobs:
