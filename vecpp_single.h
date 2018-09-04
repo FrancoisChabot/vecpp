@@ -15,6 +15,13 @@
 #include <stdexcept>
 #include <type_traits>
 
+#ifdef _MSVC_LANG
+#if _MSVC_LANG < 201703L
+#error C++17 support is required
+#endif
+#elif __cplusplus < 201703L
+#error C++17 support is required
+#endif
 #define VECPP_VERSION_MAJOR 0
 #define VECPP_VERSION_MINOR 0
 #define VECPP_VERSION_PATCH 1
