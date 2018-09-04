@@ -833,6 +833,7 @@ std::ostream& operator<<(std::ostream& stream, const Mat<T, C, R, fl>& lhs) {
     stream << "\n";
   }
   stream << "]";
+  return stream;
 }
 template <typename T, std::size_t C, std::size_t R, Flags mf, Flags vf>
 constexpr Vec<T, R, vf> operator*(const Mat<T, C, R, mf>& mat,
