@@ -822,6 +822,18 @@ constexpr bool operator==(const Mat<T, C, R, fl>& lhs, const Mat<T, C, R, fr>& r
   }
   return true;
 }
+template<typename T, std::size_t C, std::size_t R, Flags fl>
+std::ostream& operator<<(std::ostream& stream, const Mat<T, C, R, fl>& lhs) {
+  stream << "[";
+  for(int i = 0; i < R; ++i) {
+    stream << " ";
+    for(int j = 0; j < C; ++j) {
+      stream << lhs(i,j) << ",";
+    }
+    stream << "\n";
+  }
+  stream << "]";
+}
 template <typename T, std::size_t C, std::size_t R, Flags mf, Flags vf>
 constexpr Vec<T, R, vf> operator*(const Mat<T, C, R, mf>& mat,
                                   const Vec<T, C, vf>& vec) {
@@ -848,16 +860,66 @@ constexpr Vec<T, C, vf> operator*(const Vec<T, R, vf>& vec,
   }
   return result;
 }
-template <typename T, std::size_t C, std::size_t R, Flags f>
-constexpr Mat<T, R, C, f> transpose(const Mat<T, C, R, f>& m) {
-  Mat<T, R, C, f> result = {};
-  for(std::size_t i = 0 ; i < R; ++i) {
-    for(std::size_t j = 0 ; j < C; ++j) {
-      result(i, j) = m(j, i);
-    }
-  }
-  return result;
 }
+
+namespace VECPP_NAMESPACE {
+  // ***************** DETERMINANT ***************** //
+  template<typename MatT>
+  struct Mat_determinant;
+  template<typename MatT>
+  constexpr typename MatT::value_type determinant(const MatT& mat) {
+    return Mat_determinant<MatT>::calc_determinant(mat);
+  }
+  // SPECIALIZATIONS:
+  template<typename T, Flags f>
+  struct Mat_determinant<Mat<T, 2, 2, f>> {
+    using MatT = Mat<T, 2, 2, f>;
+    static constexpr T calc_determinant(const MatT& mat) {
+      return mat(0, 0) * mat(1, 1) - mat(1, 0) * mat(0, 1);
+    }
+  };
+  template<typename T, Flags f>
+  struct Mat_determinant<Mat<T, 3, 3, f>> {
+    using MatT = Mat<T, 3, 3, f>;
+    static constexpr T calc_determinant(const MatT& mat) {
+      return
+        mat(0, 0) * (mat(1, 1) * mat(2, 2) - mat(2, 1) * mat(1, 2)) -
+        mat(1, 0) * (mat(0, 1) * mat(2, 2) - mat(2, 1) * mat(0, 2)) +
+        mat(2, 0) * (mat(0, 1) * mat(1, 2) - mat(1, 1) * mat(0, 2));
+    }
+  };
+  template<typename T, std::size_t N, Flags f>
+  struct Mat_determinant <Mat<T, N, N, f>> {
+    using MatT = Mat<T, N, N, f>;
+    static constexpr T calc_determinant(const MatT& A) {
+      T result = T(0);
+      T sign = T(1);
+      for(std::size_t i = 0; i < N; ++i) {
+        Mat<T, N-1, N-1, f> cf = {};
+        for(std::size_t j = 0; j < N-1; ++j) {
+          for(std::size_t k = 0; k < N-1; ++k) {
+            cf(j, k) = A(
+                j < i ? j : j + 1,
+                k + 1);
+          }
+        }
+        result += sign * determinant(cf) * A(i, 0);
+        sign = sign * T(-1);
+      }
+      return result;
+    }
+  };
+  // ***************** TRANSPOSE ***************** //
+  template <typename T, std::size_t C, std::size_t R, Flags f>
+  constexpr Mat<T, R, C, f> transpose(const Mat<T, C, R, f>& m) {
+    Mat<T, R, C, f> result = {};
+    for(std::size_t i = 0 ; i < R; ++i) {
+      for(std::size_t j = 0 ; j < C; ++j) {
+        result(i, j) = m(j, i);
+      }
+    }
+    return result;
+  }
 }
 
 namespace VECPP_NAMESPACE {
