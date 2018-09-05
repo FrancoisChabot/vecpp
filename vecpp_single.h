@@ -45,6 +45,8 @@ constexpr Scalar pi = Scalar(3.1415926535897932385);
 template <typename Scalar>
 constexpr Scalar half_pi = pi<Scalar> / Scalar(2);
 template <typename Scalar>
+constexpr Scalar quarter_pi = pi<Scalar> / Scalar(4);
+template <typename Scalar>
 constexpr Scalar two_pi = pi<Scalar>* Scalar(2);
 }  // namespace VECPP_NAMESPACE
 
@@ -92,6 +94,13 @@ T mod(const T& v, const T& d) {
 }
 }  // namespace non_cste
 namespace cste {
+constexpr unsigned long long factorial(std::size_t N) {
+  unsigned long long result = 1;
+  for(unsigned long long i = 1 ; i <= N ; ++i) {
+    result *= i;
+  }
+  return result;
+}
 template <typename T>
 constexpr T sqrt(const T& v) {
   if (v == T(0)) {
@@ -434,16 +443,25 @@ namespace VECPP_NAMESPACE {
 template <typename T, Flags f>
 constexpr T sin(const Angle<T, f>& a) {
   if constexpr (is_ct(f)) {
-    constexpr std::array<T, 5> taylor_factors = {-6, 120, -5040, 362880,
-                                                 -39916800};
-    T r = a.as_rad();
-    T r_2 = r * r;
-    T result = r;
-    for (auto factor : taylor_factors) {
-      r *= r_2;
-      result += r / factor;
+    double r = a.as_rad();
+    bool neg = false;
+    if(r < 0.0) {
+      r *= -1.0;
+      neg = true;
     }
-    return result;
+    if(r > half_pi<double>) {
+      r = pi<double> - r;
+    }
+    double r_2 = r*r * -1.0;
+    double result = r;
+    for (unsigned long long i = 3; i < 19; i+=2) {
+      r *= r_2;
+      result += r / cste::factorial(i);
+    }
+    if(neg) {
+      result *= -1.0;
+    }
+    return T(result);
   } else {
     return std::sin(a.as_rad());
   }
