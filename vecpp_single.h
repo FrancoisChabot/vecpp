@@ -951,6 +951,13 @@ constexpr typename MatT::value_type determinant(const MatT& mat) {
   return Mat_determinant<MatT>::calc_determinant(mat);
 }
 template <typename T, typename Traits>
+struct Mat_determinant<Mat<T, 1, 1, Traits>> {
+  using MatT = Mat<T, 1, 1, Traits>;
+  static constexpr T calc_determinant(const MatT& mat) {
+    return mat(0, 0);
+  }
+};
+template <typename T, typename Traits>
 struct Mat_determinant<Mat<T, 2, 2, Traits>> {
   using MatT = Mat<T, 2, 2, Traits>;
   static constexpr T calc_determinant(const MatT& mat) {
