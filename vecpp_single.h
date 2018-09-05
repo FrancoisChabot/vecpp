@@ -944,6 +944,28 @@ constexpr Vec<T, C, V_traits> operator*(const Vec<T, R, V_traits>& vec,
 }
 
 namespace VECPP_NAMESPACE {
+template <typename T, std::size_t N, typename Traits>
+constexpr auto cofactor(const Mat<T, N, N, Traits>& mat, std::size_t row, std::size_t col) {
+  Mat<T, N - 1, N - 1, Traits> cf = {};
+  for (std::size_t i = 0; i < N - 1; ++i) {
+    for (std::size_t j = 0; j < N - 1; ++j) {
+      cf(i, j) = mat(
+          i < row ? i : i + 1,
+          j < col ? j : j + 1);
+    }
+  }
+  return determinant(cf);
+}
+template <typename T, std::size_t N, typename Traits>
+constexpr const Mat<T, N, N, Traits> cofactor(const Mat<T, N, N, Traits>& mat) {
+  Mat<T, N, N, Traits> result = {};
+  for (std::size_t i = 0; i < N - 1; ++i) {
+    for (std::size_t j = 0; j < N - 1; ++j) {
+      result(i, j) = cofactor(mat, i, j);
+    }
+  }
+  return result;
+}
 template <typename MatT>
 struct Mat_determinant;
 template <typename MatT>
@@ -953,9 +975,7 @@ constexpr typename MatT::value_type determinant(const MatT& mat) {
 template <typename T, typename Traits>
 struct Mat_determinant<Mat<T, 1, 1, Traits>> {
   using MatT = Mat<T, 1, 1, Traits>;
-  static constexpr T calc_determinant(const MatT& mat) {
-    return mat(0, 0);
-  }
+  static constexpr T calc_determinant(const MatT& mat) { return mat(0, 0); }
 };
 template <typename T, typename Traits>
 struct Mat_determinant<Mat<T, 2, 2, Traits>> {
@@ -980,13 +1000,7 @@ struct Mat_determinant<Mat<T, N, N, Traits>> {
     T result = T(0);
     T sign = T(1);
     for (std::size_t i = 0; i < N; ++i) {
-      Mat<T, N - 1, N - 1, Traits> cf = {};
-      for (std::size_t j = 0; j < N - 1; ++j) {
-        for (std::size_t k = 0; k < N - 1; ++k) {
-          cf(j, k) = A(j < i ? j : j + 1, k + 1);
-        }
-      }
-      result += sign * determinant(cf) * A(i, 0);
+      result += sign * cofactor(A, i, 0) * A(i, 0);
       sign = sign * T(-1);
     }
     return result;
