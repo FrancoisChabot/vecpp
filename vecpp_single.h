@@ -913,6 +913,28 @@ std::ostream& operator<<(std::ostream& stream,
   stream << "]";
   return stream;
 }
+template <typename T, std::size_t C, std::size_t R, typename Traits>
+constexpr Mat<T, C, R, Traits> operator/(const Mat<T, C, R, Traits>& mat,
+                                         const T& v) {
+  Mat<T, C, R, Traits> result = {};
+  for (std::size_t i = 0; i < R; ++i) {
+    for (std::size_t j = 0; j < C; ++j) {
+      result(i, j) = mat(i, j) / v;
+    }
+  }
+  return result;
+}
+template <typename T, std::size_t C, std::size_t R, typename Traits>
+constexpr Mat<T, C, R, Traits> operator*(const Mat<T, C, R, Traits>& mat,
+                                         const T& v) {
+  Mat<T, C, R, Traits> result = {};
+  for (std::size_t i = 0; i < R; ++i) {
+    for (std::size_t j = 0; j < C; ++j) {
+      result(i, j) = mat(i, j) * v;
+    }
+  }
+  return result;
+}
 template <typename T, std::size_t C, std::size_t R, typename M_traits,
           typename V_traits>
 constexpr Vec<T, R, V_traits> operator*(const Mat<T, C, R, M_traits>& mat,
@@ -944,6 +966,25 @@ constexpr Vec<T, C, V_traits> operator*(const Vec<T, R, V_traits>& vec,
 }
 
 namespace VECPP_NAMESPACE {
+template <typename T, std::size_t N, std::size_t M, std::size_t P,
+          typename traits>
+constexpr Mat<T, N, P, traits> operator*(const Mat<T, N, M, traits>& lhs,
+                                         const Mat<T, M, P, traits>& rhs) {
+  Mat<T, N, P, traits> result = {};
+  for(std::size_t i = 0; i < N; ++i) {
+    for(std::size_t j = 0; j < P; ++j) {
+      T v = T(0);
+      for(std::size_t k = 0; k < M; ++k) {
+        v += lhs(i, k) * rhs(k, j);
+      }
+      result(i, j) = v;
+    }
+  }
+  return result;
+}
+}
+
+namespace VECPP_NAMESPACE {
 template <typename T, std::size_t N, typename Traits>
 constexpr auto cofactor(const Mat<T, N, N, Traits>& mat, std::size_t row, std::size_t col) {
   Mat<T, N - 1, N - 1, Traits> cf = {};
@@ -954,13 +995,14 @@ constexpr auto cofactor(const Mat<T, N, N, Traits>& mat, std::size_t row, std::s
           j < col ? j : j + 1);
     }
   }
-  return determinant(cf);
+  T sign = (row + col) % 2 ? T(-1): T(1);
+  return determinant(cf) * sign;
 }
 template <typename T, std::size_t N, typename Traits>
 constexpr const Mat<T, N, N, Traits> cofactor(const Mat<T, N, N, Traits>& mat) {
   Mat<T, N, N, Traits> result = {};
-  for (std::size_t i = 0; i < N - 1; ++i) {
-    for (std::size_t j = 0; j < N - 1; ++j) {
+  for (std::size_t i = 0; i < N; ++i) {
+    for (std::size_t j = 0; j < N; ++j) {
       result(i, j) = cofactor(mat, i, j);
     }
   }
@@ -984,24 +1026,13 @@ struct Mat_determinant<Mat<T, 2, 2, Traits>> {
     return mat(0, 0) * mat(1, 1) - mat(1, 0) * mat(0, 1);
   }
 };
-template <typename T, typename Traits>
-struct Mat_determinant<Mat<T, 3, 3, Traits>> {
-  using MatT = Mat<T, 3, 3, Traits>;
-  static constexpr T calc_determinant(const MatT& mat) {
-    return mat(0, 0) * (mat(1, 1) * mat(2, 2) - mat(2, 1) * mat(1, 2)) -
-           mat(1, 0) * (mat(0, 1) * mat(2, 2) - mat(2, 1) * mat(0, 2)) +
-           mat(2, 0) * (mat(0, 1) * mat(1, 2) - mat(1, 1) * mat(0, 2));
-  }
-};
 template <typename T, std::size_t N, typename Traits>
 struct Mat_determinant<Mat<T, N, N, Traits>> {
   using MatT = Mat<T, N, N, Traits>;
   static constexpr T calc_determinant(const MatT& A) {
     T result = T(0);
-    T sign = T(1);
     for (std::size_t i = 0; i < N; ++i) {
-      result += sign * cofactor(A, i, 0) * A(i, 0);
-      sign = sign * T(-1);
+      result += cofactor(A, i, 0) * A(i, 0);
     }
     return result;
   }
@@ -1015,6 +1046,45 @@ constexpr Mat<T, R, C, Traits> transpose(const Mat<T, C, R, Traits>& m) {
     }
   }
   return result;
+}
+}
+
+namespace VECPP_NAMESPACE {
+template <typename Mat_t>
+struct Matrix_inversion {
+  static constexpr bool is_invertible(const Mat_t& m) {
+    return determinant(m) != 0;
+  }
+  static constexpr Mat_t invert(const Mat_t& m) {
+    return transpose(cofactor(m)) / determinant(m);
+  }
+};
+template <typename T, typename traits>
+struct Matrix_inversion<Mat<T, 1, 1, traits>> {
+  static constexpr bool is_invertible(const Mat<T, 1, 1, traits>& m) {
+    return m(0, 0) != T(0);
+  }
+  static constexpr Mat<T, 1, 1, traits> invert(const Mat<T, 1, 1, traits>& m) {
+    return Mat<T, 1, 1, traits>{m(0, 0)};
+  }
+};
+template <typename T, typename traits>
+struct Matrix_inversion<Mat<T, 2, 2, traits>> {
+  static constexpr bool is_invertible(const Mat<T, 2, 2, traits>& m) {
+    return determinant(m) != T(0);
+  }
+  static constexpr Mat<T, 2, 2, traits> invert(const Mat<T, 2, 2, traits>& m) {
+    return Mat<T, 2, 2, traits>{m(1, 1), -m(0, 1), -m(1, 0), m(0, 0)} /
+           determinant(m);
+  }
+};
+template <typename T, std::size_t N, typename traits>
+constexpr Mat<T, N, N, traits> inverse(const Mat<T, N, N, traits>& m) {
+  return Matrix_inversion<Mat<T, N, N, traits>>::invert(m);
+}
+template <typename T, std::size_t N, typename traits>
+constexpr bool is_invertible(const Mat<T, N, N, traits>& m) {
+  return Matrix_inversion<Mat<T, N, N, traits>>::is_invertible(m);
 }
 }
 
