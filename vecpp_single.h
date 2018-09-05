@@ -523,11 +523,13 @@ constexpr T tan(const Angle<T, Traits>& a) {
 }  // namespace VECPP_NAMESPACE
 
 namespace VECPP_NAMESPACE {
-template <typename T, std::size_t len, typename traits = Vec_traits<T>>
-struct alignas(traits::align) Vec {
+template <typename T, std::size_t len, typename Traits = Vec_traits<T>>
+struct alignas(Traits::align) Vec {
  public:
-  using value_type = T;
+  static_assert(len > 0);
   static constexpr std::size_t length = len;
+  using value_type = T;
+  using traits = Traits;
   constexpr T& at(std::size_t i) {
     if (i >= len) {
       throw std::out_of_range("out of range vector access");
@@ -854,6 +856,7 @@ namespace VECPP_NAMESPACE {
 template <typename T, std::size_t C, std::size_t R,
           typename Traits = Mat_traits<T>>
 struct Mat {
+  static_assert(C > 0 && R > 0);
   static constexpr std::size_t rows = R;
   static constexpr std::size_t cols = C;
   using value_type = T;
