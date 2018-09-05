@@ -94,13 +94,6 @@ T mod(const T& v, const T& d) {
 }
 }  // namespace non_cste
 namespace cste {
-constexpr unsigned long long factorial(std::size_t N) {
-  unsigned long long result = 1;
-  for(unsigned long long i = 1 ; i <= N ; ++i) {
-    result *= i;
-  }
-  return result;
-}
 template <typename T>
 constexpr T sqrt(const T& v) {
   if (v == T(0)) {
@@ -182,6 +175,13 @@ constexpr ScalarT exp(const ScalarT& v) {
   } else {
     return cste::exp(v);
   }
+}
+constexpr unsigned long long factorial(std::size_t N) {
+  unsigned long long result = 1;
+  for(unsigned long long i = 1 ; i <= N ; ++i) {
+    result *= i;
+  }
+  return result;
 }
 template <Flags f = 0, typename ScalarT>
 constexpr ScalarT floor(const ScalarT& v) {
@@ -454,9 +454,9 @@ constexpr T sin(const Angle<T, f>& a) {
     }
     double r_2 = r*r * -1.0;
     double result = r;
-    for (unsigned long long i = 3; i < 19; i+=2) {
+    for (std::size_t i = 3; i < 19; i+=2) {
       r *= r_2;
-      result += r / cste::factorial(i);
+      result += r / factorial(i);
     }
     if(neg) {
       result *= -1.0;
