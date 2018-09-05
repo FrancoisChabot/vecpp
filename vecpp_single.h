@@ -272,7 +272,7 @@ class Angle {
   static constexpr Angle from_clamped_deg(const value_type&);
   constexpr value_type as_deg() const;
   constexpr value_type as_rad() const;
-  constexpr value_type raw() const;
+  constexpr const value_type& raw() const;
   template <int new_flags>
   constexpr operator Angle<T, new_flags>() const;
  private:
@@ -425,7 +425,7 @@ constexpr T Angle<T, f>::as_rad() const {
   return value_;
 }
 template <typename T, Flags f>
-constexpr T Angle<T, f>::raw() const {
+constexpr const T& Angle<T, f>::raw() const {
   return value_;
 }
 }  // namespace VECPP_NAMESPACE
